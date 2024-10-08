@@ -33,10 +33,13 @@ function Leave() {
     let validationErrors = {};
   
     // leaveName validation
-    if (!formData.leaveName.trim()) {
+    const trimmedLeaveName = formData.leaveName.trim(); // Trim to remove leading/trailing spaces
+    if (!formData.leaveName) {
       validationErrors.leaveName = "Leave Name is required.";
-    } else if (!/^[A-Za-z]+$/.test(formData.leaveName)) {
-      validationErrors.leaveName = "Only characters are allowed.";
+    } else if (formData.leaveName !== trimmedLeaveName) {
+      validationErrors.leaveName = "Leading and trailing spaces are not allowed.";
+    } else if (!/^[A-Za-z\s]+$/.test(trimmedLeaveName)) {
+      validationErrors.leaveName = "Only characters and spaces are allowed.";
     }
   
     // leavesPerMonth validation
@@ -47,11 +50,14 @@ function Leave() {
     }
   
     // leaveDescription validation
-    if (!formData.leaveDescription.trim()) {
+    const trimmedLeaveDescription = formData.leaveDescription.trim(); // Trim to remove leading/trailing spaces
+    if (!trimmedLeaveDescription) {
       validationErrors.leaveDescription = "Leave Description is required.";
-    } else if (!/^[A-Za-z\s]+$/.test(formData.leaveDescription)) {
+    } else if (!/^[A-Za-z\s]+$/.test(trimmedLeaveDescription)) {
       validationErrors.leaveDescription = "Only characters and spaces are allowed in Leave Description.";
-    } else if (formData.leaveDescription.length > 300) {
+    } else if (formData.leaveDescription !== trimmedLeaveDescription) {
+      validationErrors.leaveDescription = "Leading and trailing spaces are not allowed.";
+    } else if (trimmedLeaveDescription.length > 300) {
       validationErrors.leaveDescription = "Leave Description must be less than 300 characters.";
     }
   
@@ -67,6 +73,7 @@ function Leave() {
   
     return validationErrors;
   };
+  
 
   const handleSubmit = (e) => {
     e.preventDefault();

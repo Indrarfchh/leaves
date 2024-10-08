@@ -7,7 +7,7 @@ const EditDeliverable = () => {
     deliverableDescription: "",
     measurementCriteria: "",
     expectedCompletionDate: "",
-    status: "In Progress",
+    status: "In Progress", 
   });
 
   const [errors, setErrors] = useState({});
@@ -33,6 +33,11 @@ const EditDeliverable = () => {
     });
   };
 
+
+  /*  setFormData((prevData)=>({
+    ...prevData,[name]:value
+  }))
+  */
   const handleSubmit = (e) => {
     e.preventDefault();
 

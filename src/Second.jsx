@@ -103,9 +103,10 @@ function Second() {
     <MdDelete />
     </div>
     </div>
-    <div className='border-2 border-solid px-4 py-24 bg-gray-400'>
-    
-    </div>
+    <div>
+  <textarea className='w-full h-48 border border-solid border-gray-400 p-2' />
+</div>
+
     </div>
     
     </div>

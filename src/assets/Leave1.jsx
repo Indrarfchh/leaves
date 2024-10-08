@@ -13,7 +13,7 @@ function Leave1() {
    
     <div className='flex flex-row  mt-20'>
     <div className='px-7'>
-    <p>Leave Types <br/><button className='flex flex-row items-center bg-blue-600 p-2' onClick={handlePopup}><FaPlus /><span>Add Leave</span></button></p>
+    <p>Leave Types <br/><button className='flex flex-row items-center bg-blue-600 p-2' onClick={handlePopup}><span>Add Leave</span></button></p>
     </div>
     {popUp && <Leave/>}
    

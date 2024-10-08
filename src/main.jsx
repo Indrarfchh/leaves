@@ -19,13 +19,15 @@ import LeaveForm from './LeaveForm.jsx'
 import Leave from './assets/LeaveForm.jsx'
 import App from './App.jsx'
 import Demo from './Demo.jsx'
+import PersonalInfo from './Personal.jsx'
+import { BrowserRouter } from 'react-router-dom'
+import CollegeNameForm from './LeadingSpaces.jsx'
 
 
 
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    
- <App/>
+  <Second/>
   </StrictMode>,
 )

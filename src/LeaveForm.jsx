@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { IoMdHome } from "react-icons/io";
 
 const LeaveForm = () => {
   const [startDate, setStartDate] = useState('');
@@ -9,22 +8,27 @@ const LeaveForm = () => {
   const [comments, setComments] = useState('');
   const [attachment, setAttachment] = useState(null);
   const [errors, setErrors] = useState({});
-  const [totalDuration, setTotalDuration] = useState(''); // Store total duration
+  const [totalDuration, setTotalDuration] = useState('');
 
   const calculateTotalDuration = () => {
     if (startDate && endDate) {
       const start = new Date(startDate);
       const end = new Date(endDate);
       const diffInTime = end.getTime() - start.getTime();
-      const diffInDays = diffInTime / (1000 * 3600 * 24) + 1; // Adding 1 to include both start and end dates
-
-      // Adjust for half-day
-      const adjustedDuration = halfDay ? diffInDays - 0.5 : diffInDays;
-      setTotalDuration(adjustedDuration.toFixed(2)); // Set total duration with two decimal points
+      let diffInDays = diffInTime / (1000 * 3600 * 24) + 1; // Adding 1 to include both start and end dates
+  
+      // Adjust for single-day leave
+      if (start.getTime() === end.getTime()) {
+        setTotalDuration('1'); // Default to 1 day for single day leave
+      } else {
+        setTotalDuration(diffInDays.toFixed(2)); // Total days between start and end dates
+      }
     } else {
-      setTotalDuration('');
+      setTotalDuration(''); // Clear duration if dates are not set
     }
   };
+  
+  
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
@@ -32,40 +36,45 @@ const LeaveForm = () => {
     const today = new Date();
     const oneWeekAgo = new Date(today);
     oneWeekAgo.setDate(today.getDate() - 7);
-
+    
     const oneYearFromNow = new Date(today);
     oneYearFromNow.setFullYear(today.getFullYear() + 1);
-
+  
     const start = new Date(startDate);
     const end = new Date(endDate);
-
-    // Validation rules for start and end dates
+  
+    // Validation for start date
     if (!startDate || start < oneWeekAgo || start > today) {
       validationErrors.startDate = "Start date must be within the past week.";
     }
+  
+    // Validation for end date
+    if (!endDate || (end < start) || (end > oneYearFromNow)) {
+      validationErrors.endDate = "End date must be today or within one year from today.";
+    }
 
-    if (!endDate || end < today || end > oneYearFromNow) {
-      validationErrors.endDate = "End date must be within one year from today.";
+    // Allow single-day leave (start and end date are the same)
+    if (!start.getTime() === end.getTime() && (start < today || start > oneYearFromNow)) {
+      validationErrors.endDate = "End date must be today or within one year from today.";
     }
 
     if (!leaveName) {
       validationErrors.leaveName = "Please select a leave type.";
     }
-
+  
     if (!attachment) {
       validationErrors.attachment = "Please attach a document.";
     }
-
-    // Validation for comments (only allowing characters)
+  
     const commentsRegex = /^[a-zA-Z\s]*$/;
     if (!commentsRegex.test(comments)) {
       validationErrors.comments = "Comments can only contain letters and spaces.";
     }
-
+  
     setErrors(validationErrors);
-
+  
+    // Submit the form if there are no validation errors
     if (Object.keys(validationErrors).length === 0) {
-      // Submit form logic if no errors
       console.log("Form submitted successfully!");
     }
   };
@@ -85,7 +94,6 @@ const LeaveForm = () => {
     calculateTotalDuration();
   };
 
-  // Calculate min and max values for start and end dates
   const today = new Date().toISOString().split('T')[0];
   const oneWeekAgo = new Date();
   oneWeekAgo.setDate(new Date().getDate() - 7);
@@ -105,8 +113,8 @@ const LeaveForm = () => {
               className="border border-gray-300 p-2 w-full rounded-md"
               value={startDate}
               onChange={handleStartDateChange}
-              min={lastWeek} // Set the minimum date
-              max={today} // Set the maximum date
+              min={lastWeek}
+              max={today}
             />
             {errors.startDate && <p className="text-red-500 text-sm">{errors.startDate}</p>}
           </div>
@@ -118,8 +126,8 @@ const LeaveForm = () => {
               className="border border-gray-300 p-2 w-full rounded-md"
               value={endDate}
               onChange={handleEndDateChange}
-              min={today} // End date can't be earlier than today
-              max={oneYear} // End date can't be later than one year from now
+              min={today}
+              max={oneYear}
             />
             {errors.endDate && <p className="text-red-500 text-sm">{errors.endDate}</p>}
           </div>
@@ -170,7 +178,7 @@ const LeaveForm = () => {
               type="number"
               className="border border-gray-300 p-2 w-full rounded-md"
               disabled
-              value={halfDay ? '0.5' : '1'}
+              value={halfDay ? '0.5' : ''}
             />
           </div>
 
