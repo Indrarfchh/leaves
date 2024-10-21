@@ -1,12 +1,8 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-
 import './index.css'
-
 import Laxman from './Final.jsx'
 import Employee from './Employee.jsx'
-
-
 import Second from './Second.jsx'
 import Edit from './Edit.jsx'
 import EditDeliverable from './Edit.jsx'
@@ -22,12 +18,15 @@ import Demo from './Demo.jsx'
 import PersonalInfo from './Personal.jsx'
 import { BrowserRouter } from 'react-router-dom'
 import CollegeNameForm from './LeadingSpaces.jsx'
-
-
-
-
+import PayrollSection from './Payroll.jsx'
+import LeaveBalance from './LeaveBalance.jsx'
+import LeavesMaster from './LeavesMaster.jsx'
+import LeaveForms from './LeaveManagment.jsx'
+import LeaveTable from './TableLeaves.jsx'
+import LeaveFo from './LeaveFo.jsx'
+import LeaveTypes from './LeaveTypes.jsx'
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-  <Second/>
+  <LeaveTypes/>
   </StrictMode>,
 )

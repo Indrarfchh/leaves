@@ -1,78 +1,96 @@
 import React, { useState } from 'react';
 
-const LeaveForm = () => {
+// Helper function to get the day of the week as a string (Monday, Tuesday, etc.)
+const getDayOfWeek = (date) => {
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  return days[new Date(date).getDay()];
+};
+
+// Dummy holiday list (adjust the dates as needed)
+const holidays = [
+  '2024-10-20', // Example: Dasara
+  '2024-10-25', // Example: Deepavali
+  '2024-11-17', // Example: Vinayaka Chavithi
+  '2024-11-25', // Example: Sri Rama Navami
+  '2024-11-29', // Example: Moharam
+];
+
+const LeaveForm = ({ weekOff }) => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [leaveName, setLeaveName] = useState('');
   const [halfDay, setHalfDay] = useState(false);
   const [comments, setComments] = useState('');
-  const [attachment, setAttachment] = useState(null);
   const [errors, setErrors] = useState({});
   const [totalDuration, setTotalDuration] = useState('');
 
-  const calculateTotalDuration = () => {
-    if (startDate && endDate) {
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-      const diffInTime = end.getTime() - start.getTime();
-      let diffInDays = diffInTime / (1000 * 3600 * 24) + 1; // Adding 1 to include both start and end dates
-  
-      // Adjust for single-day leave
-      if (start.getTime() === end.getTime()) {
-        setTotalDuration('1'); // Default to 1 day for single day leave
-      } else {
-        setTotalDuration(diffInDays.toFixed(2)); // Total days between start and end dates
+  // Check if a given date is a holiday
+  const isHoliday = (date) => holidays.includes(date.toISOString().split('T')[0]);
+
+  // Calculate total duration based on start and end dates, week-offs, holidays, and half-day selection
+  const calculateTotalDuration = (start, end, isHalfDay) => {
+    const startDateTime = new Date(start);
+    const endDateTime = new Date(end);
+
+    let totalDays = 0;
+
+    // Loop through each date from start to end
+    for (let d = new Date(startDateTime); d <= endDateTime; d.setDate(d.getDate() + 1)) {
+      const currentDay = getDayOfWeek(d);
+      const dateStr = d.toISOString().split('T')[0];
+
+      // Check if it's a working day (not a week-off or a holiday)
+      if (!weekOff.includes(currentDay) && !isHoliday(d)) {
+        totalDays++;
       }
+    }
+
+    // If no valid working days, set duration to 0
+    if (totalDays === 0) {
+      setTotalDuration('0');
     } else {
-      setTotalDuration(''); // Clear duration if dates are not set
+      // If it's the same start and end date, adjust duration for half-day
+      if (startDateTime.getTime() === endDateTime.getTime()) {
+        setTotalDuration(isHalfDay ? '0.5' : '1');
+      } else {
+        // For multiple days, adjust total duration based on half-day selection
+        const finalDuration = isHalfDay ? totalDays - 0.5 : totalDays;
+        setTotalDuration(finalDuration.toFixed(2));
+      }
     }
   };
-  
-  
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
     let validationErrors = {};
     const today = new Date();
-    const oneWeekAgo = new Date(today);
-    oneWeekAgo.setDate(today.getDate() - 7);
-    
     const oneYearFromNow = new Date(today);
     oneYearFromNow.setFullYear(today.getFullYear() + 1);
-  
+
     const start = new Date(startDate);
     const end = new Date(endDate);
-  
+
     // Validation for start date
-    if (!startDate || start < oneWeekAgo || start > today) {
-      validationErrors.startDate = "Start date must be within the past week.";
-    }
-  
-    // Validation for end date
-    if (!endDate || (end < start) || (end > oneYearFromNow)) {
-      validationErrors.endDate = "End date must be today or within one year from today.";
+    if (!startDate || start > today) {
+      validationErrors.startDate = "Select a valid start date.";
     }
 
-    // Allow single-day leave (start and end date are the same)
-    if (!start.getTime() === end.getTime() && (start < today || start > oneYearFromNow)) {
-      validationErrors.endDate = "End date must be today or within one year from today.";
+    // Validation for end date
+    if (!endDate || (end < start) || (end > oneYearFromNow)) {
+      validationErrors.endDate = "Select a valid end date.";
     }
 
     if (!leaveName) {
       validationErrors.leaveName = "Please select a leave type.";
     }
-  
-    if (!attachment) {
-      validationErrors.attachment = "Please attach a document.";
-    }
-  
+
     const commentsRegex = /^[a-zA-Z\s]*$/;
     if (!commentsRegex.test(comments)) {
       validationErrors.comments = "Comments can only contain letters and spaces.";
     }
-  
+
     setErrors(validationErrors);
-  
+
     // Submit the form if there are no validation errors
     if (Object.keys(validationErrors).length === 0) {
       console.log("Form submitted successfully!");
@@ -81,23 +99,23 @@ const LeaveForm = () => {
 
   const handleStartDateChange = (e) => {
     setStartDate(e.target.value);
-    calculateTotalDuration();
+    calculateTotalDuration(e.target.value, endDate, halfDay);
   };
 
   const handleEndDateChange = (e) => {
     setEndDate(e.target.value);
-    calculateTotalDuration();
+    calculateTotalDuration(startDate, e.target.value, halfDay);
   };
 
   const handleHalfDayChange = () => {
     setHalfDay(!halfDay);
-    calculateTotalDuration();
+    calculateTotalDuration(startDate, endDate, !halfDay);
   };
 
   const today = new Date().toISOString().split('T')[0];
   const oneWeekAgo = new Date();
-  oneWeekAgo.setDate(new Date().getDate() - 7);
-  const lastWeek = oneWeekAgo.toISOString().split('T')[0];
+  oneWeekAgo.setDate(new Date().getDate() - 7); // One week before today
+  const oneWeekAgoDate = oneWeekAgo.toISOString().split('T')[0];
   const oneYearFromNow = new Date();
   oneYearFromNow.setFullYear(new Date().getFullYear() + 1);
   const oneYear = oneYearFromNow.toISOString().split('T')[0];
@@ -113,8 +131,8 @@ const LeaveForm = () => {
               className="border border-gray-300 p-2 w-full rounded-md"
               value={startDate}
               onChange={handleStartDateChange}
-              min={lastWeek}
-              max={today}
+              min={oneWeekAgoDate}
+              max={oneYear}
             />
             {errors.startDate && <p className="text-red-500 text-sm">{errors.startDate}</p>}
           </div>
@@ -126,7 +144,7 @@ const LeaveForm = () => {
               className="border border-gray-300 p-2 w-full rounded-md"
               value={endDate}
               onChange={handleEndDateChange}
-              min={today}
+              min={oneWeekAgoDate}
               max={oneYear}
             />
             {errors.endDate && <p className="text-red-500 text-sm">{errors.endDate}</p>}
@@ -141,21 +159,15 @@ const LeaveForm = () => {
             onChange={(e) => setLeaveName(e.target.value)}
           >
             <option value="">Select Leave Type</option>
-            <option value="Sick Leave">Sick Leave</option>
-            <option value="Casual Leave">Casual Leave</option>
-            <option value="Vacation">Vacation</option>
+            <option value="Earn Leaves">Earn Leaves</option>
+            <option value="Casual Leaves">Casual Leaves</option>
+            <option value="Sick Leaves">Sick Leaves</option>
+            <option value="Maternity Leaves">Maternity Leaves</option>
+            <option value="Paternity Leaves">Paternity Leaves</option>
+            <option value="Religious Festival Leaves">Religious Festival Leaves</option>
+            <option value="Compassionate Leave">Compassionate Leave</option>
           </select>
           {errors.leaveName && <p className="text-red-500 text-sm">{errors.leaveName}</p>}
-        </div>
-
-        <div className="mb-4">
-          <label className="block mb-1 text-sm font-medium">Attach Document</label>
-          <input
-            type="file"
-            className="border border-gray-300 p-2 w-full rounded-md"
-            onChange={(e) => setAttachment(e.target.files[0])}
-          />
-          {errors.attachment && <p className="text-red-500 text-sm">{errors.attachment}</p>}
         </div>
 
         <div className="mb-4 flex items-center">
@@ -171,26 +183,14 @@ const LeaveForm = () => {
           </label>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <label className="block mb-1 text-sm font-medium">Duration</label>
-            <input
-              type="number"
-              className="border border-gray-300 p-2 w-full rounded-md"
-              disabled
-              value={halfDay ? '0.5' : ''}
-            />
-          </div>
-
-          <div>
-            <label className="block mb-1 text-sm font-medium">Total Duration</label>
-            <input
-              type="number"
-              className="border border-gray-300 p-2 w-full rounded-md"
-              disabled
-              value={totalDuration}
-            />
-          </div>
+        <div className="mb-4">
+          <label className="block mb-1 text-sm font-medium">Duration</label>
+          <input
+            type="text"
+            className="border border-gray-300 p-2 w-full rounded-md"
+            disabled
+            value={totalDuration} // Display total duration
+          />
         </div>
 
         <div className="mb-4">

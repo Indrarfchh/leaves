@@ -9,7 +9,6 @@ import { MdAddCircle } from "react-icons/md";
 import { MdOutlineModeEditOutline } from "react-icons/md";
 import { MdDelete } from "react-icons/md";
 
-
 function Second() {
   return (
     <div className='ml-48 mr-48 mt-5'>
